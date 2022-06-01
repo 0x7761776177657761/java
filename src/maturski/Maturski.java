@@ -21,7 +21,6 @@ public class Maturski {
             con = DriverManager.getConnection
             ("jdbc:mysql://localhost:3306/new_schema","sql","ASD123zxc");
             System.out.println("Connected.");
-            displayProducts (con);
             selectProducts (con);
         } catch (Exception e) {
             System.out.println("Connection failed: " + e);
@@ -39,9 +38,9 @@ public class Maturski {
                 int price = rs.getInt(4);
                 System.out.println("Broj proizvoda: "+ id + "\t Ime: " + name + "\t" + "- " + price);
             }
-            System.out.println("Izaberi proizvod. Da zavrsis selekciju, klikni 0 ");
+            System.out.println("Izaberi proizvod.");
         } catch (Exception e) {
-            System.out.println("Connection failed: " + e);
+            System.out.println("Error: " + e);
         }
     }
     
@@ -51,14 +50,22 @@ public class Maturski {
         ArrayList<Integer> ammount = new ArrayList<>();
         
         while (true) {
-            System.out.println("Broj proizvoda");
+            displayProducts(con);
+            System.out.println("Broj proizvoda:");
             selection.add(reader.nextInt());
             if (selection.get(selection.size() - 1) == 0) {
-                break;
+                System.out.println("Broj ne sme biti 0!");
+                continue;
             }
-            System.out.println("Kolicina proizvoda");
+            System.out.println("Kolicina proizvoda:");
             ammount.add(reader.nextInt());
             if (ammount.get(selection.size() - 1) == 0) {
+                System.out.println("Kolicina ne sme biti 0!");
+                continue;
+            }
+            System.out.println("Pritisni taster \"0\" ako si zavrsio sa biranjem.");
+            int input = reader.nextInt();
+            if (input == 0 || input == 0) {
                 break;
             }
         }
@@ -67,7 +74,7 @@ public class Maturski {
         
         int billNumber = getNextBillNumber (con);
         System.out.println("Vas racun:");
-        for (int i = 0; i < selection.size()-1; i++) {
+        for (int i = 0; i < selection.size(); i++) {
             createItemAndAddToBill (con, billNumber,
                                     selection.get(i), ammount.get(i));
             System.out.println("Ime: " + selection.get(i) + "\t" + "Kolicina - " + ammount.get(i));
