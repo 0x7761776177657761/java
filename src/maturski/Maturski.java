@@ -5,7 +5,10 @@
 package maturski;
 
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Scanner;
 
 public class Maturski {
@@ -13,7 +16,8 @@ public class Maturski {
     public static void main(String[] args) {
         Connection con;
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");  
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            
             con = DriverManager.getConnection
             ("jdbc:mysql://localhost:3306/new_schema","sql","ASD123zxc");
             System.out.println("Connected.");
@@ -25,7 +29,7 @@ public class Maturski {
     }
     
     private static void displayProducts (Connection con) {
-        String querry = "SELECT * FROM new_schema.proizvod;";
+        String querry = "SELECT * FROM proizvod;";
         try {
             Statement statement = con.createStatement();
             ResultSet rs = statement.executeQuery(querry);
@@ -43,15 +47,22 @@ public class Maturski {
     
     private static void selectProducts (Connection con) {
         Scanner reader = new Scanner(System.in);
-        ArrayList<Integer> selection = new ArrayList<Integer>();
-        ArrayList<Integer> ammount = new ArrayList<Integer>();
-        do {
+        ArrayList<Integer> selection = new ArrayList<>();
+        ArrayList<Integer> ammount = new ArrayList<>();
+        
+        while (true) {
             System.out.println("Broj proizvoda");
             selection.add(reader.nextInt());
+            if (selection.get(selection.size() - 1) == 0) {
+                break;
+            }
             System.out.println("Kolicina proizvoda");
             ammount.add(reader.nextInt());
-        } while (selection.get(selection.size()-1) != 0 || 
-                 selection.get(ammount.size()-1) != 0);
+            if (ammount.get(selection.size() - 1) == 0) {
+                break;
+            }
+        }
+        
         reader.close();
         
         int billNumber = getNextBillNumber (con);
@@ -93,11 +104,19 @@ public class Maturski {
         }
         return number;
     }
-    
+
     private static void createItemAndAddToBill (Connection con, int currentBill,
                                          int productId, int productAmmount) {
-        String itemQuerry = "INSERT INTO stavka (proizvod, kolicina) VALUES ( "+productId+", "+productAmmount+");";
-        String billQuerry = "INSERT INTO racun (br_racuna, stavka) VALUES ( "+currentBill+", "+getItemNumber (con)+");";
+        
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        java.util.Date today = Calendar.getInstance().getTime();
+        String todayAsString = dateFormat.format(today);
+        
+        String itemQuerry = "INSERT INTO stavka (proizvod, kolicina) VALUES ( " 
+                + productId + ", " + productAmmount + ");";
+        String billQuerry = "INSERT INTO racun (br_racuna, stavka, datum) VALUES ( "
+                + currentBill + ", " + getItemNumber (con) + ", \"" + todayAsString + "\");";
+
         try {
             PreparedStatement stmt = con.prepareStatement(itemQuerry);
             PreparedStatement stmt1 = con.prepareStatement(billQuerry);
@@ -106,9 +125,5 @@ public class Maturski {
         } catch (Exception e) {
             System.out.println("Querry failed: " + e);
         }
-    }
-    
-    private void selectMenu () {
-        System.out.println("Izaberi proizvod:");
     }
 }
